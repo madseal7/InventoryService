@@ -2,6 +2,7 @@ package com.example.InventoryService.service;
 
 import com.example.InventoryService.*;
 import com.example.InventoryService.dto.Product;
+import com.example.InventoryService.mapper.ProductMapper;
 import com.example.InventoryService.repository.ProductRepository;
 import io.grpc.stub.StreamObserver;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +15,7 @@ import java.util.Optional;
 public class InventoryService extends ProductServiceGrpc.ProductServiceImplBase {
 
     private final ProductRepository repository;
+    private final ProductMapper mapper;
 
     @Override
     public void getProductInfo(ProductRequest request, StreamObserver<ProductResponse> responseObserver) {
@@ -21,13 +23,7 @@ public class InventoryService extends ProductServiceGrpc.ProductServiceImplBase 
         Optional<Product> optionalProduct = repository.findById(request.getProductId());
         Product product = optionalProduct.get();
 
-        ProductResponse response = ProductResponse.newBuilder()
-                .setId(request.getProductId())
-                .setName(product.getName())
-                .setQuantity(product.getQuantity())
-                .setPrice(product.getPrice())
-                .setSale(product.isOnSale())
-                .build();
+        ProductResponse response = mapper.productToProductResponse(product);
 
         responseObserver.onNext(response);
         responseObserver.onCompleted();
